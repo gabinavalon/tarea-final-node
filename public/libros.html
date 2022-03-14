@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit this template
+-->
+<html>
+
+<head>
+  <title>Gestión libros</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+
+<body>
+  <script>
+    if (localStorage.getItem('token') == null) {
+      localStorage.setItem('mensaje', "Inicia sesión para entrar");
+      window.location.href = "index.html";
+    }
+  </script>
+
+
+  <div class="container">
+    <h3>Gestión de Libros</h3>
+    <a href="subir_archivos.html" class="btn">Subir archivos al servidor</a> <br>
+    <button id="btnLibros">Cargar Libros</button>
+  
+    <a href="insertar_libro.html" class="btn btn-info">Nuevo Libro</a>
+
+  
+    <div id="formulario">
+  
+  
+    </div>
+    <table id="tablaLibros" class="table">
+  
+    </table>
+    <div id="divLibros"></div>
+  </div>
+
+ 
+
+  <!---*************** VENTANA MODAL ***************-->
+  <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <input type="text" name="id" id="idLibro" >
+          <p>Titulo:<input type="text" name="titulo" id="titulo"></p>
+          <p>Autor:<input type="text" name="autor" id="autor"></p>
+          <p>Precio:<input type="text" name="precio" id="precio"></p>
+          <p>Imagen:<input type="text" name="imagen" id="imagen"></p>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button id="btnInsertaLibro">Inserta Libro</button>
+          <button id="btnActualizaLibro" class="btn btn-primary" data-dismiss="modal">Actualiza Libro</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!--- *************** FIN DE VENTANA MODAL **************-->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+
+  <script>
+
+    const token = localStorage.getItem('token');
+
+    cargaLibros();
+
+    document.getElementById("btnLibros").addEventListener('click', cargaLibros);
+    document.getElementById("btnActualizaLibro").addEventListener('click', actualizaLibro);
+    document.getElementById("btnInsertaLibro").addEventListener('click', insertaLibro);
+
+    let btnInsertaLibro = document.getElementById("btnInsertaLibro");
+    let btnActualizaLibro = document.getElementById("btnActualizaLibro");
+
+    function getAbsolutePath() {
+      var loc = window.location;
+      var pathName = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+      return loc.href.substring(0, loc.href.length - ((loc.pathname + loc.search + loc.hash).length - pathName.length));
+    }
+
+
+    function cargaLibros() {
+
+      let tabla = document.getElementById("tablaLibros");
+      fetch(getAbsolutePath() + 'webresources/generic/libros/', {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(response => {
+          if (!response.ok) {
+
+            throw new Error('Error de token');
+
+          } else {
+
+            return response.json();
+
+          }
+
+
+        })
+        .then(json => {
+         
+          //bucle para eliminar todas las filas de la tabla
+          while (tabla.firstChild) {
+            tabla.removeChild(tabla.firstChild);
+          }
+          //recorre todos los libros del array de libros
+          for (i = 0; i < json.length; i++) {
+            //document.getElementById("divLibros").innerHTML+=json[i].titulo;
+            let fila = document.createElement("tr");
+            let celdaId = document.createElement("td");
+            celdaId.textContent = json[i].id;
+
+            let celdaTitulo = document.createElement("td");
+            celdaTitulo.textContent = json[i].titulo;
+
+            let celdaPrecio = document.createElement("td");
+            celdaPrecio.textContent = json[i].precio;
+
+            let celdaImagen = document.createElement("td");
+            let img = document.createElement("img");
+            img.setAttribute("src", `img/${json[i].imagen}`);
+            img.setAttribute("alt", "portada libro");
+            img.setAttribute("width", 100);
+            img.setAttribute("height", 150);
+            celdaImagen.appendChild(img);
+
+            let celdaAutor = document.createElement("td");
+            celdaAutor.textContent = json[i].autor;
+
+            /*** CELDA BORRAR ****/
+            let celdaBorrar = document.createElement("td");
+            let btnBorrar = document.createElement("button");
+            btnBorrar.setAttribute("onclick", "borraLibroPorId('"
+              + json[i].id + "')");
+            btnBorrar.textContent = "Borrar";
+            celdaBorrar.appendChild(btnBorrar);
+            /*** CELDA ACTUALIZAR ****/
+            let celdaActualizar = document.createElement("td");
+            let btnActualizar = document.createElement("button");
+            btnActualizar.setAttribute("onclick", "cargaLibroPorId('"
+              + json[i].id + "')");
+            btnActualizar.textContent = "Actualizar";
+            celdaActualizar.appendChild(btnActualizar);
+
+            fila.appendChild(celdaId);
+            fila.appendChild(celdaTitulo);
+            fila.appendChild(celdaPrecio);
+            fila.appendChild(celdaAutor);
+            fila.appendChild(celdaImagen);
+            fila.appendChild(celdaBorrar);
+            fila.appendChild(celdaActualizar);
+
+
+            tabla.appendChild(fila);
+
+          }//fin de for
+
+        }).catch(error=>console.log(error));
+    }
+
+    function cargaLibroPorId(idLibro) {
+      $('#myModal').modal('show');
+
+      btnInsertaLibro.style.display = "none";
+      btnActualizaLibro.style.display = "inline";
+      fetch(getAbsolutePath() + 'webresources/generic/libro/' + idLibro, {
+        headers: {
+          'x-token': token
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+
+            throw new Error('Error de token');
+
+          } else {
+
+            return response.json();
+
+          }
+
+
+        })
+        .then(json => {
+          console.log(json);
+          document.getElementById("formulario").style.display = "block";
+          document.getElementById("idLibro").value = json.id;
+          document.getElementById("titulo").value = json.titulo;
+          document.getElementById("autor"
+          ).value = json.autor;
+          document.getElementById("precio").value = json.precio;
+          document.getElementById("imagen").value = json.imagen;
+        }).catch(error=>console.log(error));
+
+    }
+
+    function actualizaLibro() {
+      let idAct = document.getElementById("idLibro").value;
+
+      fetch(getAbsolutePath() + 'webresources/generic/libro/'+ idAct , {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: document.getElementById("idLibro").value,
+          titulo: document.getElementById("titulo").value,
+          autor: document.getElementById("autor").value,
+          precio: document.getElementById("precio").value,
+          imagen: document.getElementById("imagen").value
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+          'x-token': token
+        },
+      })
+      .then(response => {
+          if (!response.ok) {
+
+            throw new Error('Error de token');
+
+          } else {
+
+            return response.json();
+
+          }
+
+
+        })
+        .then((json) => console.log(json))
+        .catch(error=>console.log(error))
+        .then(cargaLibros());
+
+    }
+
+    function insertaLibro() {
+      fetch(getAbsolutePath() + 'webresources/generic/libros/', {
+        method: 'POST',
+        body: JSON.stringify({
+          titulo: document.getElementById("titulo").value,
+          autor: document.getElementById("autor").value,
+          precio: document.getElementById("precio").value,
+          imagen: document.getElementById("imagen").value
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+          'x-token': token
+        },
+      })
+      .then(response => {
+          if (!response.ok) {
+
+            throw new Error('Error de token');
+
+          } else {
+
+            return response.json();
+
+          }
+
+
+        })
+        .then((json) => console.log(json))
+        .then(cargaLibros())
+        .catch(error=>console.log(error));
+    }
+
+    function borraLibroPorId(idLibro) {
+      fetch(getAbsolutePath() + 'webresources/generic/libros/' + idLibro, {
+        method: 'DELETE',
+        headers: new Headers({ 'x-token': token }),
+      });
+      cargaLibros();
+    }
+  </script>
+</body>
+
+</html>

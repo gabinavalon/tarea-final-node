@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertar libro</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('token') == null) {
+          localStorage.setItem('mensaje', "Inicia sesión para entrar");
+          window.location.href = "index.html";
+        }
+      </script>
+    
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-12">
+                <h1>Nuevo libro</h1>
+            </div>
+            <form action="/subir2" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="titulo">Titulo</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo">  
+                </div>
+                <div class="form-group">
+                    <label for="autor">Autor/a</label>
+                    <input type="text" class="form-control" id="autor" name="autor">  
+                </div>
+                <div class="form-group">
+                    <label for="precio">Precio</label>
+                    <input type="number" class="form-control" id="precio" name="precio">  
+                </div>
+                <div class="form-group">
+                    <label for="imagen">Imagen</label>
+                    <input type="file" id="imagen" name="imagen">  
+                </div>                 
+            </form>
+        </div>
+            <div class="row">
+                      <button onclick="crearLibroConImagen()" class="btn btn-success">Añadir libro (FETCH)</button> <br><br>
+            </div>
+            <br>
+            <div class="row">
+                <a href="libros.html" class="badge badge-info">Volver al listado</a>
+            </div>
+      
+        
+    </div>
+
+    <script>
+
+        document.getElementById('imagen').addEventListener('change', event => {
+            handleImageUpload(event)
+        })
+        let files;
+        const handleImageUpload = event => {
+            files = event.target.files;
+            console.log(files);
+        }
+        function crearLibroConImagen() {
+            //const files = event.target.files;
+            const formData = new FormData();
+            formData.append('titulo', document.getElementById('titulo').value);
+            formData.append('autor', document.getElementById('autor').value);
+            formData.append('precio', document.getElementById('precio').value);
+            formData.append('imagen', files[0]);
+            fetch(getAbsolutePath() + "subir2", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data    )
+                    alert(data.msg)
+                })
+                .catch(error => {
+                    console.error(error)
+                    alert(error)
+                })
+        }
+ 
+        function getAbsolutePath() {
+            var loc = window.location;
+            var pathName = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+            return loc.href.substring(0, loc.href.length - ((loc.pathname + loc.search + loc.hash).length - pathName.length));
+        }
+    </script>
+
+    
+</body>
+</html>

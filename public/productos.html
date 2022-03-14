@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit this template
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <button id="btnProductos">Cargar Productos</button>
+        <button id="btnProducto">Carga Producto</button>
+
+        
+        <button id="btnBorraProducto">Borra Producto</button>
+        <button type="button" class="btn btn-primary" id="abreParaInsertar">
+            Nuevo Producto
+        </button>
+        <input type="number" id="idProducto" value="1">
+        <div id="formulario">
+
+            
+        </div>
+        <table id="tablaProductos" class="table">
+            
+        </table>
+        <div id="divProductos"></div>
+        
+        <!---*************** VENTANA MODAL ***************-->
+        <!-- The Modal -->
+<div class="modal" id="myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Modal Heading</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+            <p>ID:<input type="text" name="id" id="id"></p>
+            <p>Nombre:<input type="text" name="nombre" id="nombre"></p>
+            <p>Categoria:<input type="text" name="categoria" id="categoria"></p>
+            <p>Precio:<input type="text" name="precio" id="precio"></p> 
+            <p>Imagen:<input type="text" name="imagen" id="imagen"></p>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button id="btnInsertaProducto">Inserta Producto</button>
+        <button id="btnActualizaProducto" class="btn btn-primary" data-dismiss="modal">Actualiza Producto</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+        <!--- *************** FIN DE VENTANA MODAL **************-->
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+        
+        <script>
+            document.getElementById("btnProductos").addEventListener('click',cargaProductos);
+            document.getElementById("btnProducto").addEventListener('click',cargaProducto);
+            document.getElementById("btnActualizaProducto").addEventListener('click',actualizaProducto);
+             document.getElementById("btnInsertaProducto").addEventListener('click',insertaProducto);
+             document.getElementById("btnBorraProducto").addEventListener('click',borraProducto);
+             document.getElementById("abreParaInsertar").addEventListener('click',abreParaInsertar);
+
+           let btnInsertaProducto=document.getElementById("btnInsertaProducto");
+           let btnActualizaProducto=document.getElementById("btnActualizaProducto");
+           
+           function getAbsolutePath() {
+                var loc = window.location;
+                var pathName = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+                return loc.href.substring(0, loc.href.length - ((loc.pathname + loc.search + loc.hash).length - pathName.length));
+            }
+            
+            
+           function cargaProductos(){
+           alert(getAbsolutePath());
+           let tabla=document.getElementById("tablaProductos");
+           fetch(getAbsolutePath()+'webresources/generic/productos/')
+                .then(response => response.json())
+                .then(json => {console.log(json);
+                //bucle para eliminar todas las filas de la tabla
+                while( tabla.firstChild){
+                    tabla.removeChild(tabla.firstChild);
+                }
+                //recorre todos los productos del array de productos
+                for ( i=0;i<=json.length;i++){
+                     //document.getElementById("divProductos").innerHTML+=json[i].nombre;
+                     let fila=document.createElement("tr");
+                     let celdaId=document.createElement("td");
+                     celdaId.textContent=json[i].id;
+                     let celdaNombre=document.createElement("td");
+                     celdaNombre.textContent=json[i].nombre;
+                     let celdaPrecio=document.createElement("td");
+                     celdaPrecio.textContent=json[i].precio;
+                     
+                     let celdaCategoria=document.createElement("td");
+                     celdaCategoria.textContent=json[i].categoria;
+                     /*** CELDA BORRAR ****/
+                     let celdaBorrar=document.createElement("td");
+                     let btnBorrar=document.createElement("button");
+                     btnBorrar.setAttribute("onclick","borraProductoPorId("
+                             +json[i].id+")");
+                     btnBorrar.textContent="Borrar";
+                     celdaBorrar.appendChild(btnBorrar);
+                    /*** CELDA ACTUALIZAR ****/
+                     let celdaActualizar=document.createElement("td");
+                     let btnActualizar=document.createElement("button");
+                     btnActualizar.setAttribute("onclick","cargaProductoPorId("
+                             +json[i].id+")");
+                     btnActualizar.textContent="Actualizar";
+                     celdaActualizar.appendChild(btnActualizar);
+                    
+                     fila.appendChild(celdaId);
+                     fila.appendChild(celdaNombre);
+                     fila.appendChild(celdaPrecio);
+                     fila.appendChild(celdaCategoria);
+                     fila.appendChild(celdaBorrar);
+                     fila.appendChild(celdaActualizar);
+                     
+                     
+                     tabla.appendChild(fila);
+                     
+                 }//fin de for
+                 
+              })
+         } 
+
+         function cargaProducto() {
+             let idProducto=document.getElementById("idProducto").value;
+             cargaProductoPorId(idProducto);              
+         }
+         function cargaProductoPorId(idProducto){
+             $('#myModal').modal('show');
+
+             btnInsertaProducto.style.display="none";
+             btnActualizaProducto.style.display="inline";
+             fetch(getAbsolutePath()+'webresources/generic/producto/'+idProducto )
+                .then(response => response.json())
+                .then(json => {
+                    console.log(json);
+                    document.getElementById("formulario").style.display="block";
+                    document.getElementById("id").value=json.id;
+                    document.getElementById("nombre").value=json.nombre;
+                    document.getElementById("categoria").value=json.categoria;
+                    document.getElementById("precio").value=json.precio;
+                    document.getElementById("imagen").value=json.imagen;
+                });
+         }
+         
+         function abreParaInsertar(){
+             $('#myModal').modal('show');
+
+             btnInsertaProducto.style.display="inline";
+             btnActualizaProducto.style.display="none";
+         }
+         function actualizaProducto(){
+              fetch(getAbsolutePath()+'webresources/generic/producto/', {
+             method: 'PUT',
+             body: JSON.stringify({
+               id: document.getElementById("id").value,
+               nombre: document.getElementById("nombre").value,
+               categoria: document.getElementById("categoria").value,
+               precio: document.getElementById("precio").value,
+               imagen: document.getElementById("imagen").value
+             }),
+             headers: {
+               'Content-type': 'application/json; charset=UTF-8',
+             },
+           })
+             .then((response) => response.json())
+             .then((json) => console.log(json));
+
+         }
+         
+         function insertaProducto(){
+              fetch(getAbsolutePath()+'webresources/generic/producto/', {
+             method: 'POST',
+             body: JSON.stringify({
+               nombre: document.getElementById("nombre").value,
+               categoria: document.getElementById("categoria").value,
+               precio: document.getElementById("precio").value,
+               imagen: document.getElementById("imagen").value
+             }),
+             headers: {
+               'Content-type': 'application/json; charset=UTF-8',
+             },
+           })
+             .then((response) => response.json())
+             .then((json) => console.log(json));
+
+         }
+         
+         function borraProducto() {
+             let idProducto=document.getElementById("idProducto").value;
+             borraProductoPorId(idProducto);
+             cargaProductos();
+         }
+         function borraProductoPorId(idProducto){
+             fetch(getAbsolutePath()+'webresources/generic/producto/'+idProducto, {
+                method: 'DELETE',
+              });
+              cargaProductos();
+         }
+        </script>
+    </body>
+</html>
+© 2022 GitHub, Inc.
+Terms
+Priva

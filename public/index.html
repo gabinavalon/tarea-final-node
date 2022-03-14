@@ -1,0 +1,140 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.15.1/jquery.validate.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5 mx-auto">
+                <div id="first">
+                    <div class="myform form ">
+                        <div class="logo mb-3">
+                            <div class="col-md-12 text-center">
+                                <h1>Login</h1>
+                            </div>
+                        </div>
+                        <div id="login">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Email</label>
+                                <input type="email" name="correo" class="form-control" id="correo"
+                                    aria-describedby="emailHelp" placeholder="Introduzca email">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Password</label>
+                                <input type="password" name="password" id="password" class="form-control"
+                                    aria-describedby="emailHelp" placeholder="Introduzca Password">
+                            </div>
+                            <div class="col-md-12 text-center ">
+                                <button id="btnLogin" class=" btn btn-block mybtn btn-primary tx-tfm">Login</button>
+                            </div>
+                            <hr>
+                            <p class="text-center">Login con Google</p>
+                            <div class="col-md-12 mb-3 d-flex justify-content-center">
+                                <script src="https://accounts.google.com/gsi/client" async defer></script>
+                                <div id="g_id_onload"
+                                    data-client_id="1047277041908-4ma2ecc1cgsuotfe8591ap4m4k38ie6i.apps.googleusercontent.com"
+                                    data-auto_prompt="false" data-callback="handleCredentialResponse">
+                                </div>
+                                <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+                                    data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left">
+                                </div>
+
+                            </div>
+                            <div class="col-md-12 mb-3 d-flex justify-content-center">
+                                <button id="btnlogout" class="btn  d-flex justify-content-center">Logout de
+                                    Google</button>
+                            </div>
+                            <br><br>
+                            <div class="col-md-12 mb-3 d-flex justify-content-center">
+                                <p id="mensajes" class="alert"></p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <script type="text/javascript">
+            function comprobarLogin(json) {
+
+                if (json.login) {
+                    localStorage.setItem('token', json.token);
+                    window.location.href = "libros.html";
+                }
+            }
+
+
+            if (localStorage.getItem('mensaje') != null) {
+                document.getElementById('mensajes').innerHTML = localStorage.getItem('mensaje');
+                localStorage.removeItem('mensaje');
+            } else {
+                document.getElementById('mensajes').innerHTML = "";
+            }
+
+
+            let btnLogin = document.getElementById('btnLogin');
+
+            btnLogin.addEventListener('click', hacerLogin);
+
+
+            function hacerLogin() {
+                fetch('http://localhost:90/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        correo: document.getElementById('correo').value,
+                        password: document.getElementById('password').value,
+                    }),
+                    headers: {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    },
+                })
+                    .then((response) => response.json())
+                    .then((json) => {
+                        alert(json.msg + "Token: " + json.token);
+                        comprobarLogin(json);
+                    });
+            }
+        </script>
+        <script>
+            let boton = document.getElementById("btnlogout");
+
+            boton.onclick = () => {
+
+                google.accounts.id.disableAutoSelect();
+                google.accounts.id.revoke(localStorage.getItem('email'));
+                localStorage.clear();
+                location.reload();
+
+            }
+
+            function handleCredentialResponse(response) {
+                // decodeJwtResponse() is a custom function defined by you
+                // to decode the credential response.
+                //const responsePayload = decodeJwtResponse(response.credential);
+
+                console.log(response.credential);
+                const body = { 'id_token': response.credential };
+                fetch('http://localhost:90/google', {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    headers: {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    },
+
+                })
+                    .then((response) => response.json())
+                    .then((json) => {
+                        alert("Token: " + json.token);
+                        comprobarLogin(json);
+                    });
+            }
+        </script>
+</body>

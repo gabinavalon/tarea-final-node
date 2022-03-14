@@ -1,0 +1,7 @@
+Completa la aplicación web con el crud de productos de la tabla que te ha tocado añadiendo:
+ - Un login a la tabla de usuarios y una validación por token
+ - Una protección de todas las rutas vaidando el token
+ - Un login con Google
+ - Subida de archivos
+ - Haz una memoria que con capturas que ilustren cada uno de estos puntos
+ - Comparte el enlace del repositorio
